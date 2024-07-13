@@ -1,11 +1,73 @@
 const express = require('express');
-const app = express();
-app.use(express.static('dist'))
 const morgan = require('morgan');
 const cors = require('cors')
+const path = require('path');
+const Note = require('./models/note')
+
+
+const app = express();
+
+
+app.use(express.static('dist'))
 app.use(cors())
 
 app.use(express.json());
+const mongoose = require('mongoose')
+
+
+
+
+///Start of DB CONFIG
+
+
+
+
+// if (process.argv.length<3) {
+//     console.log('give password as argument')
+//     process.exit(1)
+//   }
+  
+// const password = process.argv[2]
+// const name=process.argv[3];
+// const number=process.argv[4];
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+// const note = new Note({
+//   name: ' ',
+//   number: 898,
+  
+// })
+
+// note.save().then(result => {
+//    console.log('note saved!')
+//    mongoose.connection.close()
+//  }) 
+
+  //If you define a model with the name Person, mongoose will automatically name the associated collection as people
+  
+
+
+
+///END of DB CONFIG
+
+
+
+
+
+
+
+
 
 
 morgan.token('body',req=>{
@@ -18,32 +80,8 @@ morgan.token('body',req=>{
 //          tokens.
 //      ].join(' ')
 //  }));
-
-app.use(express.json());
 app.use(morgan(':method :url :body'));
 
-let persons=[
-    { 
-      "id": "1",
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": "2",
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": "3",
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": "4",
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
  const unknownEnd=(req,res)=>{
      res.status(404).send(
          "<> Wrong endpoint</>"
@@ -51,11 +89,9 @@ let persons=[
 }
 
 
-// app.get("/",(req,res)=>{
-//     express.static('dist')
-// })
+
 app.get("/info",(req,res)=>{
-    const num= Math.max(...persons.map(note=> note.id ))
+    const num=Note.length;
     const datee= new Date;
     console.log(num)
     res.send(`<h1>No of entries ${num} 
@@ -65,7 +101,14 @@ app.get("/info",(req,res)=>{
         </h1>`)
 })
 app.get("/api/persons",(req,res)=>{
-    res.json(persons)
+    Note.find({}).then(result => {
+        
+            res.json(result)
+          
+        
+        mongoose.connection.close()
+      }) 
+    
 })
 
 app.get("/api/persons/:id",(req,res)=>{
@@ -84,7 +127,7 @@ app.post("/api/persons",(req,res)=>{
          });
     }
     const person={
-        id: String(Math.floor(Math.random() * 200)),
+        
         name: String(body.name),
         number: String(body.number)
     }
