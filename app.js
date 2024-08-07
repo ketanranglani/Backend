@@ -6,13 +6,17 @@ const mongoose=require('mongoose')
 const config=require('./utils/config')
 const logger=require('./utils/logger')
 const morgan = require('morgan')
-
+require('express-async-errors')
 
 
 app.use(express.json())
 const phoneRouter = require('./controller/notes')
+const userRouter=require('./controller/users')
+const loginRouter = require('./controller/login')
 app.use(morgan('tiny'))
 app.use('/api/persons', phoneRouter)
+app.use('/api/users',userRouter)
+app.use('/api/login',loginRouter)
 
 
 

@@ -1,11 +1,18 @@
+const jwt= require('jsonwebtoken');
 const phoneRouter=require('express').Router()
 const Note=require('../models/note')
+const User = require('../models/user');
 
 
 
 
-
-
+const getTokenFrom = request => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.startsWith('Bearer ')) {
+    return authorization.replace('Bearer ', '')
+  }
+  return null
+}
 phoneRouter.get('/info',(req,res) => {
   const num=Note.length
   
@@ -20,11 +27,11 @@ phoneRouter.get('/info',(req,res) => {
 
 
 //Get all persons
-phoneRouter.get('/',(req,res) => {
-  Note.find({}).then(result => {
-    res.json(result)
+phoneRouter.get('/',async (req,res) => {
+  const result = await Note.find({}).populate('users',{username:1,name:1})
+  res.json(result)
 
-  })
+  
 
 })
 
@@ -60,9 +67,16 @@ phoneRouter.put('/:id',(req,res,next) => {
 })
 
 //Add a person
-phoneRouter.post('/',(req,res,next) => {
-  const body=req.body
-  // console.log(body);
+phoneRouter.post('/',async (req,res) => {
+  const body=req.body;
+  const decodedToken = jwt.verify(getTokenFrom(req), process.env.SECRET)
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+  const user = await User.findById(decodedToken.id)
+
+  
+  console.log(user);
   if(!body.name || !body.number){
     return res.status(400).json({
       error:'content missing',
@@ -73,14 +87,16 @@ phoneRouter.post('/',(req,res,next) => {
   const person= new Note({
 
     name: String(body.name),
-    number: String(body.number)
+    number: String(body.number),
+    users: user.id
   })
-  person.save().then(savedPerson => {
-    res.json(savedPerson)
-  })
-    .catch(error => {
-      next(error)
-    })
+  const savedPerson = await person.save()
+  user.entries=user.entries.concat(savedPerson._id)
+  await user.save()
+
+  res.status(201).json(savedPerson);
+  
+    
 
   // console.log(person);
 
@@ -99,12 +115,12 @@ phoneRouter.delete('/api/persons/:id',(req,res,next) => {
 
 })
 
-const unknownEnd=(req,res) => {
-  res.status(404).send(
-    '<> Wrong endpoint</>'
-  )
-}
+// const unknownEnd=(req,res) => {
+//   res.status(404).send(
+//     '<> Wrong endpoint</>'
+//   )
+// }
 
-phoneRouter.use(unknownEnd)
+//phoneRouter.use(unknownEnd)
 
 module.exports = phoneRouter

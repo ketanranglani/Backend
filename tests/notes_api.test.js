@@ -1,10 +1,11 @@
-const { test, after } = require('node:test')
+const { test, after} = require('node:test')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const assert = require('node:assert')
 const api = supertest(app)
-
+const User = require('../controller/users')
+const helper= require('./helper')
 test('phone entries are returned as json', async () => {
   await api
     .get('/api/persons')
@@ -23,6 +24,8 @@ test('the first note is about HTTP Methods', async()=>{
     const contents = response.body.map(e => e.content)
     assert(contents.includes('Ketan'))
 })
+
+
 
 after(async () => {
   await mongoose.connection.close()

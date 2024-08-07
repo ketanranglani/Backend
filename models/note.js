@@ -1,6 +1,7 @@
 
 const mongoose = require('mongoose')
 
+const User = require('../models/user')
 mongoose.set('strictQuery', false)
 
 
@@ -22,8 +23,14 @@ const noteSchema = new mongoose.Schema({
     required: [true]
 
   },
+  users:[{
+    type:mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 
 })
+
+
 
 noteSchema.set('toJSON', {
   transform: (document, returnedObject) => {
